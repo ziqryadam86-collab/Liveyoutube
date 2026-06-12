@@ -1,0 +1,37 @@
+name: Kemas Kini YouTube Live M3U8
+
+on:
+  schedule:
+    # Berjalan setiap 10 minit
+    - cron: '*/10 * * * *'
+  workflow_dispatch: # Membolehkan anda jalankan secara manual jika perlu
+
+jobs:
+  update-m3u8:
+    runs-on: ubuntu-latest
+
+    steps:
+    # 1. Ambil kod dari repository
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+
+    # 2. Pasang yt-dlp
+    - name: Pasang yt-dlp
+      run: |
+        sudo wget https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp -O /usr/local/bin/yt-dlp
+        sudo chmod a+rx /usr/local/bin/yt-dlp
+
+    # 3. Jalankan skrip bash untuk buat index.m3u8
+    - name: Kemas Kini M3U8
+      run: bash get_live.sh
+
+    # 4. Commit dan Push fail index.m3u8 yang baharu ke GitHub Pages
+    - name: Commit dan Push Perubahan
+      run: |
+        git config --global user.name "GitHub Action"
+        git config --global user.email "actions@github.com"
+        git add index.m3u8
+        # Hanya commit jika ada perubahan untuk elakkan error
+        git diff-index --quiet HEAD || git commit -m "Auto-update: index.m3u8"
+        git push
+        
